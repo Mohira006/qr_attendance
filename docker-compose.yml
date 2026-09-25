@@ -1,0 +1,61 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-attendance}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-attendance}
+      POSTGRES_DB: ${POSTGRES_DB:-attendance}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-attendance} -d ${POSTGRES_DB:-attendance}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Talks to the "postgres" service by its Compose network hostname, not the
+      # host-facing DATABASE_URL in .env (that one is for connecting from your
+      # own machine, e.g. `alembic upgrade head` run outside Docker).
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-attendance}:${POSTGRES_PASSWORD:-attendance}@postgres:5432/${POSTGRES_DB:-attendance}
+      DATABASE_ECHO: ${DATABASE_ECHO:-false}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      DEBUG: ${DEBUG:-false}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-7}
+      COMPANY_NAME: ${COMPANY_NAME:-Demo Company}
+      COMPANY_TIMEZONE: ${COMPANY_TIMEZONE:-Asia/Tashkent}
+      STORAGE_PATH: /app/storage
+      MAX_PHOTO_SIZE_BYTES: ${MAX_PHOTO_SIZE_BYTES:-2097152}
+      MAX_LETTER_ATTACHMENT_SIZE_BYTES: ${MAX_LETTER_ATTACHMENT_SIZE_BYTES:-5242880}
+      SEED_PASSWORD: ${SEED_PASSWORD:-Password123!}
+    volumes:
+      - backend_storage:/app/storage
+    ports:
+      - "8000:8000"
+    # Migrations run every startup (safe to repeat). Seeding only succeeds once -
+    # the script itself refuses to run against a database that already has data,
+    # so `|| true` just swallows that expected refusal on every restart after the first.
+    command: sh -c "alembic upgrade head && (python -m scripts.seed || true) && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  backend_storage:

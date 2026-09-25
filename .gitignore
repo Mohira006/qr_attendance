@@ -1,0 +1,22 @@
+# Environment
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.db
+
+# Node
+node_modules/
+dist/
+
+# Runtime data
+storage/
+
+# Editors
+.idea/
+.vscode/
+.DS_Store
