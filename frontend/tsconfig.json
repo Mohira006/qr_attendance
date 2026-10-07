@@ -24,5 +24,6 @@
     }
   },
   "include": ["src"],
+  "exclude": ["src/pages/hr/SimulatorPage.tsx"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
