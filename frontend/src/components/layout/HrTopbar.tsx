@@ -1,11 +1,11 @@
-import { Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { TopbarUtilities } from "@/components/layout/TopbarUtilities";
 
-export function HrTopbar() {
+export function HrTopbar({ onMenuClick }: { onMenuClick: () => void }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -18,8 +18,16 @@ export function HrTopbar() {
   }
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-line bg-surface px-6">
-      <form onSubmit={onSearchSubmit} className="w-full max-w-sm">
+    <header className="flex h-16 items-center justify-between gap-3 border-b border-line bg-surface px-4 md:px-6">
+      <button
+        type="button"
+        onClick={onMenuClick}
+        className="rounded-lg p-2 text-ink-muted hover:bg-canvas hover:text-ink md:hidden"
+        aria-label="Menu"
+      >
+        <Menu size={20} />
+      </button>
+      <form onSubmit={onSearchSubmit} className="hidden w-full max-w-sm sm:block">
         <div className="relative">
           <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint" />
           <input

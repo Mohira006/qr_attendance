@@ -11,6 +11,7 @@ import {
   Settings as SettingsIcon,
   UserCircle,
   Users,
+  X,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
@@ -31,20 +32,38 @@ const NAV_ITEMS = [
   { to: "/hr/settings", labelKey: "nav.settings", icon: SettingsIcon },
 ];
 
-export function HrSidebar() {
+interface HrSidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function HrSidebar({ isOpen, onClose }: HrSidebarProps) {
   const { t } = useTranslation();
   const { logout } = useAuth();
 
   return (
-    <aside className="flex h-screen w-60 flex-col bg-ink text-white">
+    <aside
+      className={cn(
+        "fixed inset-y-0 left-0 z-40 flex w-60 flex-col bg-ink text-white transition-transform duration-200 md:static md:z-auto md:translate-x-0",
+        isOpen ? "translate-x-0" : "-translate-x-full",
+      )}
+    >
       <div className="flex items-center gap-2 px-5 py-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand font-display text-sm font-bold">
           QR
         </div>
         <span className="font-display text-base font-semibold">{t("auth.appName")}</span>
+        <button
+          type="button"
+          onClick={onClose}
+          className="ml-auto rounded-lg p-1 text-white/70 hover:bg-white/10 hover:text-white md:hidden"
+          aria-label={t("common.close")}
+        >
+          <X size={20} />
+        </button>
       </div>
 
-      <nav className="flex-1 space-y-0.5 px-3">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3">
         {NAV_ITEMS.map(({ to, labelKey, icon: Icon }) => (
           <NavLink
             key={to}
