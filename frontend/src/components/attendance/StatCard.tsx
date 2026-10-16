@@ -16,10 +16,10 @@ export function StatCard({
 }) {
   return (
     <Card>
-      <CardBody className="flex items-center gap-4">
+      <CardBody className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
         <div className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-lg", accentClass)}>{icon}</div>
         <div className="min-w-0">
-          <p className="truncate font-display text-2xl font-semibold tabular-nums text-ink">{value}</p>
+          <p className="break-words font-display text-2xl font-semibold tabular-nums text-ink">{value}</p>
           <p className="text-sm text-ink-muted">{label}</p>
         </div>
       </CardBody>

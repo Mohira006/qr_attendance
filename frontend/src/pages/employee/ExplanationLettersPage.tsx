@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
-import { Label, Textarea } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Input";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/States";
 import { getErrorMessage } from "@/services/api";
@@ -49,8 +49,7 @@ function LetterCard({ letter: initial }: { letter: ExplanationLetterResponse }) 
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [letter, setLetter] = useState(initial);
-  const [text, setText] = useState(letter.employee_explanation ?? "");
-  const [error, setError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -58,21 +57,14 @@ function LetterCard({ letter: initial }: { letter: ExplanationLetterResponse }) 
   // explanation (text or file) after first submitting, as long as no decision
   // has been made yet.
   const canEdit = letter.status !== "reviewed";
-  const hasSubmittedBefore = letter.employee_explanation !== null;
-
-  const submitMutation = useMutation({
-    mutationFn: () => explanationLettersApi.submitExplanation(letter.id, text.trim()),
-    onSuccess: (updated) => {
-      setLetter(updated);
-      void queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    },
-    onError: (err: unknown) => setError(getErrorMessage(err)),
-  });
+  const hasSubmittedBefore = letter.employee_explanation !== null || letter.attachment_url !== null;
 
   const uploadMutation = useMutation({
     mutationFn: (file: File) => explanationLettersApi.uploadAttachment(letter.id, file),
     onSuccess: (updated) => {
       setLetter(updated);
+      setSelectedFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
       void queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
     onError: (err: unknown) => setUploadError(getErrorMessage(err)),
@@ -87,11 +79,14 @@ function LetterCard({ letter: initial }: { letter: ExplanationLetterResponse }) 
   }
 
   function onFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
     setUploadError(null);
-    uploadMutation.mutate(file);
-    event.target.value = "";
+    setSelectedFile(event.target.files?.[0] ?? null);
+  }
+
+  function onSubmitFile() {
+    if (!selectedFile) return;
+    setUploadError(null);
+    uploadMutation.mutate(selectedFile);
   }
 
   return (
@@ -109,37 +104,6 @@ function LetterCard({ letter: initial }: { letter: ExplanationLetterResponse }) 
         {canEdit ? (
           <div className="space-y-3">
             <div>
-              <Label htmlFor={`explanation-${letter.id}`}>{t("letters.writeExplanation")}</Label>
-              <Textarea
-                id={`explanation-${letter.id}`}
-                rows={3}
-                value={text}
-                onChange={(event) => setText(event.target.value)}
-                placeholder={t("letters.explanationPlaceholder") ?? undefined}
-              />
-              {error && <p className="mt-1 text-sm text-status-danger">{error}</p>}
-              <div className="mt-2 flex items-center gap-3">
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setError(null);
-                    submitMutation.mutate();
-                  }}
-                  disabled={!text.trim() || submitMutation.isPending}
-                >
-                  {submitMutation.isPending ? t("common.saving") : hasSubmittedBefore ? t("letters.update") : t("letters.submit")}
-                </Button>
-                <button
-                  type="button"
-                  onClick={() => void downloadPdf()}
-                  className="flex items-center gap-1 text-sm font-medium text-brand hover:text-brand-hover"
-                >
-                  <Download size={14} /> {t("letters.download")}
-                </button>
-              </div>
-            </div>
-
-            <div className="border-t border-line pt-3">
               <Label>{t("letters.uploadFile")}</Label>
               <p className="mb-2 text-xs text-ink-muted">{t("letters.uploadFileHint")}</p>
               <div className="flex flex-wrap items-center gap-3">
@@ -148,7 +112,7 @@ function LetterCard({ letter: initial }: { letter: ExplanationLetterResponse }) 
                   type="file"
                   accept="application/pdf,image/jpeg,image/png,image/webp"
                   onChange={onFileSelected}
-                  className="block text-sm text-ink-muted"
+                  className="block max-w-full text-sm text-ink-muted"
                   disabled={uploadMutation.isPending}
                 />
                 {uploadMutation.isPending && <span className="text-xs text-ink-muted">{t("letters.uploading")}</span>}
@@ -164,13 +128,19 @@ function LetterCard({ letter: initial }: { letter: ExplanationLetterResponse }) 
               </div>
               {uploadError && <p className="mt-1 text-sm text-status-danger">{uploadError}</p>}
             </div>
+
+            <Button size="sm" onClick={onSubmitFile} disabled={!selectedFile || uploadMutation.isPending}>
+              {uploadMutation.isPending ? t("common.saving") : hasSubmittedBefore ? t("letters.update") : t("letters.submit")}
+            </Button>
           </div>
         ) : (
           <div className="space-y-3">
-            <div>
-              <Label>{t("letters.employeeExplanation")}</Label>
-              <p className="rounded-lg border border-line bg-canvas px-3 py-2 text-sm text-ink">{letter.employee_explanation}</p>
-            </div>
+            {letter.employee_explanation && (
+              <div>
+                <Label>{t("letters.employeeExplanation")}</Label>
+                <p className="rounded-lg border border-line bg-canvas px-3 py-2 text-sm text-ink">{letter.employee_explanation}</p>
+              </div>
+            )}
             {letter.hr_comment && (
               <div>
                 <Label>{t("letters.hrComment")}</Label>

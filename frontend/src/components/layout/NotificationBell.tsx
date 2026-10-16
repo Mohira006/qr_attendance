@@ -61,7 +61,7 @@ export function NotificationBell({ viewAllHref }: { viewAllHref?: string }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-40 mt-2 w-80 rounded-xl border border-line bg-surface shadow-card">
+        <div className="fixed inset-x-4 top-16 z-40 mt-2 rounded-xl border border-line bg-surface shadow-card sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:w-80">
           <div className="flex items-center justify-between border-b border-line px-4 py-3">
             <p className="text-sm font-semibold text-ink">{t("nav.notifications")}</p>
             <button

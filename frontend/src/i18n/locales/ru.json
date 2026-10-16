@@ -172,7 +172,7 @@
     "explanationPlaceholder": "Объясните причину опоздания...",
     "submit": "Отправить объяснение",
     "update": "Обновить объяснение",
-    "uploadFile": "Или загрузите файл",
+    "uploadFile": "Загрузите файл",
     "uploadFileHint": "PDF, JPEG, PNG или WebP, до 5 МБ",
     "uploadButton": "Загрузить",
     "uploading": "Загрузка...",

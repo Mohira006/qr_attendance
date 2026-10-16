@@ -92,7 +92,7 @@ export function EmployeeDashboardPage() {
       </Card>
 
       {summaryQuery.data && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatCard
             label={t("employeeDashboard.onTimeMonth")}
             value={summaryQuery.data.on_time_count}
@@ -118,24 +118,26 @@ export function EmployeeDashboardPage() {
         <CardHeader>
           <h2 className="font-display text-base font-semibold text-ink">{t("employeeDashboard.recentAttendance")}</h2>
         </CardHeader>
-        <CardBody className="p-0">
+        <CardBody className="!p-0">
           {historyQuery.data && historyQuery.data.items.length > 0 ? (
-            <table className="w-full text-left text-sm">
-              <tbody>
-                {historyQuery.data.items.map((record) => (
-                  <tr key={record.id} className="border-b border-line last:border-0">
-                    <td className="px-5 py-3 text-ink-muted">{formatDateShort(record.date)}</td>
-                    <td className="px-5 py-3 font-mono tabular-nums">{formatTime(record.check_in)}</td>
-                    <td className="px-5 py-3 font-mono tabular-nums text-ink-muted">
-                      {record.check_out ? formatTime(record.check_out) : "-"}
-                    </td>
-                    <td className="px-5 py-3">
-                      <StatusBadge tokens={attendanceStatusTokens(record.status)} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <tbody>
+                  {historyQuery.data.items.map((record) => (
+                    <tr key={record.id} className="border-b border-line last:border-0">
+                      <td className="whitespace-nowrap px-2 py-3 text-ink-muted sm:px-5">{formatDateShort(record.date)}</td>
+                      <td className="whitespace-nowrap px-2 py-3 font-mono tabular-nums sm:px-5">{formatTime(record.check_in)}</td>
+                      <td className="whitespace-nowrap px-2 py-3 font-mono tabular-nums text-ink-muted sm:px-5">
+                        {record.check_out ? formatTime(record.check_out) : "-"}
+                      </td>
+                      <td className="whitespace-nowrap px-2 py-3 sm:px-5">
+                        <StatusBadge tokens={attendanceStatusTokens(record.status)} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <EmptyState title={t("employeeDashboard.noHistoryYet")} />
           )}

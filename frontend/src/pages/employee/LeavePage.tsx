@@ -205,15 +205,15 @@ function LeaveTimeline({ eligibility }: { eligibility: LeaveEligibilityResponse 
   return (
     <Card>
       <CardBody>
-        <div className="flex items-center">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:gap-0">
           {steps.map((label, index) => {
             const state = index < current ? "done" : index === current ? "current" : "upcoming";
             return (
-              <div key={label} className="flex flex-1 items-center last:flex-none">
-                <div className="flex flex-col items-center gap-1.5">
+              <div key={label} className="flex items-center lg:flex-1 lg:items-start lg:last:flex-none">
+                <div className="flex items-center gap-3 lg:flex-col lg:gap-1.5">
                   <div
                     className={cn(
-                      "flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold",
+                      "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
                       state === "done" && "bg-brand text-white",
                       state === "current" && "bg-brand text-white ring-4 ring-brand-light",
                       state === "upcoming" && "bg-canvas text-ink-faint",
@@ -223,14 +223,14 @@ function LeaveTimeline({ eligibility }: { eligibility: LeaveEligibilityResponse 
                   </div>
                   <span
                     className={cn(
-                      "max-w-20 text-center text-[11px] leading-tight",
+                      "text-sm leading-tight lg:max-w-20 lg:text-center lg:text-[11px]",
                       state === "upcoming" ? "text-ink-faint" : "font-medium text-ink",
                     )}
                   >
                     {label}
                   </span>
                 </div>
-                {index < steps.length - 1 && <div className={cn("mx-1 h-0.5 flex-1", index < current ? "bg-brand" : "bg-line")} />}
+                {index < steps.length - 1 && <div className={cn("mx-1 hidden h-0.5 flex-1 lg:mt-3.5 lg:block", index < current ? "bg-brand" : "bg-line")} />}
               </div>
             );
           })}
